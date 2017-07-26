@@ -15,6 +15,6 @@ pf = pRe + pIm;
 
 i0 = zeros(size(pf));
 
-pc = MB(z0, pf, i0);
+pc = MB_recu(z0, pf, i0);
 colormap(hot(6))
 imagesc(Re, imag(Im), -pc) 
