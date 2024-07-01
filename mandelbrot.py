@@ -19,7 +19,7 @@ def smoothed_mandelbrot(grid, iter, escape_radius=2):
 # Returns "long term" behavior of the grid after iter iterations
 #   and the number of iterations spent on a particular grid point
 # TODO: Improve time complexity by splitting the grid amongst cores
-@njit(parallel=True, fastmath=True)
+@njit(parallel=False, fastmath=True)
 def quadratic_map(grid, iter, escape_radius=2):
     grid_shape = grid.shape
     grid = grid.flatten()
