@@ -69,7 +69,7 @@ def zoom_event(relayout_data, figure):
         
         #print("x, y:", xbounds, ybounds)
 
-        grid_args = (xbounds, ybounds, 1000)
+        grid_args = (xbounds, ybounds, 750)
 
         zoomed_figure = mandelbrot_graph(*grid_args)
     except (KeyError, TypeError):
