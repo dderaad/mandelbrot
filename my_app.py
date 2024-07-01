@@ -4,7 +4,8 @@ from utils import *
 import plotly.express as px
 import numpy as np
 
-APP_TITLE = 'Mandelbrot Zoom App'
+NAME = 'Dino de Raad'
+APP_TITLE = f'Mandelbrot Zoom App by {NAME}'
 FIGURE_TITLE = 'Mandelbrot Set'
 
 # Mandelbrot Graph Stuff
