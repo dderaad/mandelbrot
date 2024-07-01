@@ -64,7 +64,7 @@ def zoom_event(relayout_data, figure):
         xbounds = [relayout_data['xaxis.range[0]'], relayout_data['xaxis.range[1]']] 
         ybounds = [relayout_data['yaxis.range[0]'], relayout_data['yaxis.range[1]']]
         
-        print("x, y:", xbounds, ybounds)
+        #print("x, y:", xbounds, ybounds)
 
         grid_args = (xbounds, ybounds, 1000)
 
