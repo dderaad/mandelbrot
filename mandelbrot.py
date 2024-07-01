@@ -1,6 +1,7 @@
 import numpy as np
-from numba import njit, types, prange, get_num_threads
+from numba import jit, njit, types, prange, get_num_threads, vectorize, cuda
 from utils import *
+import math
 
 
 # Creates a smoothed version of the coarser quadratic map
@@ -19,7 +20,7 @@ def smoothed_mandelbrot(grid, iter, escape_radius=2):
 # Returns "long term" behavior of the grid after iter iterations
 #   and the number of iterations spent on a particular grid point
 # DONE: Improve time complexity by splitting the grid amongst cores
-@njit(parallel=False, fastmath=True)
+@njit(parallel=True, fastmath=True)
 def quadratic_map(grid, iter, escape_radius=2):
     grid_shape = grid.shape
     grid = grid.flatten()
@@ -33,17 +34,23 @@ def quadratic_map(grid, iter, escape_radius=2):
     lt_grid = np.zeros_like(grid, dtype=types.complex128)
     # iteration grid that stores the number of iterations
     iter_grid = np.zeros_like(grid, dtype=types.complex128)
-
-    for i in prange(ncores):
-        start, end = i*section_length, (i+1)*section_length
-
-        # The threshold is the minimum magnitude for a number in C
-        # before its orbit escapes
-
+    
+    if cuda:
         for j in range(iter):
-            mask = np.abs(lt_grid[start:end])<=escape_radius
-            lt_grid[start:end][mask] = np.power(lt_grid[start:end][mask], 2) + grid[start:end][mask]
-            iter_grid[start:end][mask] = j
+            
+            cuda_quadratic_map(abs_lt_grid)
+
+    else:
+        for i in prange(ncores):
+            start, end = i*section_length, (i+1)*section_length
+
+            # The threshold is the minimum magnitude for a number in C
+            # before its orbit escapes
+
+            for j in range(iter):
+                mask = np.abs(lt_grid[start:end])<=escape_radius
+                lt_grid[start:end][mask] = np.power(lt_grid[start:end][mask], 2) + grid[start:end][mask]
+                iter_grid[start:end][mask] = j
 
     lt_grid = lt_grid.reshape(grid_shape)
     iter_grid = iter_grid.reshape(grid_shape)
@@ -51,6 +58,35 @@ def quadratic_map(grid, iter, escape_radius=2):
 
     return lt_grid, iter_grid
 
+
+# A version of the quadratic map for CUDA graphics cards
+# The escape radius is the minimum magnitude for a number in C
+# before its orbit escapes the Mandelbrot set. If a number escapes,
+# iteration is halted for that number.
+# This function is optimized for CUDA-compatible graphics cards.
+@guvectorize([(
+            types.c16[:], 
+            types.c16[:], 
+            types.c16[:], 
+            types.float64,
+            types.float64,
+            )], 
+            target='cuda')
+def cuda_quadratic_map(longterm_grid, 
+                       iteration_grid, 
+                       initial_grid, 
+                       threshold, 
+                       current_iteration):
+    abs_lt_grid = math.pow(longterm_grid.real, types.float64(2)) + \
+        math.pow(longterm_grid.imag, types.float64(2))
+    mask = abs_lt_grid<=threshold
+    longterm_grid[mask] = np.power(longterm_grid[mask], 2) + initial_grid[mask]
+    # Only iterate counts for numbers not exceeding the threshold (escape radius)
+    iteration_grid[mask] = current_iteration
+
+
+
 if __name__ == "__main__":
+    
     C, real_line, imag_line = generate_grid()
     Mb = smoothed_mandelbrot(C, 100)
