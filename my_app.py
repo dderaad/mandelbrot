@@ -3,6 +3,7 @@ from mandelbrot import smoothed_mandelbrot
 from utils import *
 import plotly.express as px
 import numpy as np
+import os 
 
 NAME = 'Dino de Raad'
 APP_TITLE = f'Mandelbrot Zoom App by {NAME}'
@@ -37,9 +38,9 @@ def mandelbrot_graph(*args):
 fig = mandelbrot_graph()
 # App stuff
 
-app = Dash()
+server = Dash()
 
-app.layout = [
+server.layout = [
     html.Div(children=APP_TITLE),
     dcc.Graph(id='mandelbrot-fig', figure=fig, 
               style={'wdith': '90vh', 'height': '90vh'}),
@@ -77,6 +78,6 @@ def zoom_event(relayout_data, figure):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', 
+    server.run(host='0.0.0.0', 
             port=int(os.environ.get('PORT', 4000)), 
             debug=True)
