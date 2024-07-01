@@ -38,9 +38,10 @@ def mandelbrot_graph(*args):
 fig = mandelbrot_graph()
 # App stuff
 
-server = Dash()
+app = Dash()
+server = app.server
 
-server.layout = [
+app.layout = [
     html.Div(children=APP_TITLE),
     dcc.Graph(id='mandelbrot-fig', figure=fig, 
               style={'wdith': '90vh', 'height': '90vh'}),
@@ -78,6 +79,6 @@ def zoom_event(relayout_data, figure):
 
 
 if __name__ == "__main__":
-    server.run(host='0.0.0.0', 
+    app.run(host='0.0.0.0', 
             port=int(os.environ.get('PORT', 4000)), 
             debug=True)
