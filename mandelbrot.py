@@ -28,24 +28,24 @@ def quadratic_map(grid, iter, escape_radius=2):
     ncores = get_num_threads()
     section_length = grid.shape[0] // ncores
 
-    #for i in prange(ncores):
-    section = grid#[(i*section_length):((i+1)*section_length)]
-    # 'long-term' grid, which contains the long-term (at least, 
-    # until iter iterations) behavior of the Mandelbrot set
-    lt_grid = np.zeros_like(section, dtype=types.complex128)
-    # iteration grid that stores the number of iterations
-    iter_grid = np.zeros_like(section, dtype=types.complex128)
+    for i in prange(ncores):
+        section = grid[(i*section_length):((i+1)*section_length)]
+        # 'long-term' grid, which contains the long-term (at least, 
+        # until iter iterations) behavior of the Mandelbrot set
+        lt_grid = np.zeros_like(section, dtype=types.complex128)
+        # iteration grid that stores the number of iterations
+        iter_grid = np.zeros_like(section, dtype=types.complex128)
 
-    # The threshold is the minimum magnitude for a number in C
-    # before its orbit escapes
+        # The threshold is the minimum magnitude for a number in C
+        # before its orbit escapes
 
-    for j in range(iter):
-        mask = np.abs(lt_grid)<=escape_radius
-        lt_grid[mask] = np.power(lt_grid[mask], 2) + section[mask]
-        iter_grid[mask] = j
+        for j in range(iter):
+            mask = np.abs(lt_grid)<=escape_radius
+            lt_grid[mask] = np.power(lt_grid[mask], 2) + section[mask]
+            iter_grid[mask] = j
 
-    lt_grid = lt_grid.reshape(grid_shape)
-    iter_grid = iter_grid.reshape(grid_shape)
+        lt_grid = lt_grid.reshape(grid_shape)
+        iter_grid = iter_grid.reshape(grid_shape)
 
 
     return lt_grid, iter_grid
