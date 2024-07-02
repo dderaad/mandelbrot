@@ -13,12 +13,15 @@ def smoothed_mandelbrot(grid, iter, escape_radius=2):
     return Mb
 
 
-# Iterates grid points in the complex plane iter times under the quadratic map
-# Assumes that points will escape once their modulus exceeds the escape radius,
-# and stops computing them in further iterations
-# Returns "long term" behavior of the grid after iter iterations
-#   and the number of iterations spent on a particular grid point
-# DONE: Improve time complexity by splitting the grid amongst cores
+"""
+Iterates grid points in the complex plane iter times under the quadratic map
+Assumes that points will escape once their modulus exceeds the escape radius,
+and stops computing them in further iterations
+Returns "long term" behavior of the grid after iter iterations
+  and the number of iterations spent on a particular grid point
+  
+DONE: Improve time complexity by splitting the grid amongst cores
+"""
 @njit(parallel=False, fastmath=True)
 def quadratic_map(grid, iter, escape_radius=2):
     grid_shape = grid.shape

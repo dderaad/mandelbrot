@@ -60,10 +60,12 @@ app.layout = [
      Input('mandelbrot-fig', 'figure')]
 )
 def zoom_event(relayout_data, figure):
-    # When a zoom occurs on the mandelbrot set, the set will 
-    # be re-generated for the subset of the plane that is zoomed
-    # in on.
-    # Similar to https://stackoverflow.com/questions/56611105/how-to-get-zoom-level-in-time-series-data-as-callback-input-in-dash/64891612#64891612
+    """
+    When a zoom occurs on the mandelbrot set, the set will 
+    be re-generated for the subset of the plane that is zoomed
+    in on.
+    Similar to https://stackoverflow.com/questions/56611105/how-to-get-zoom-level-in-time-series-data-as-callback-input-in-dash/64891612#64891612
+    """
 
     zoomed_figure = figure
     xbounds = 0
@@ -84,7 +86,13 @@ def zoom_event(relayout_data, figure):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', 
-            port=int(os.environ.get('PORT', 4000)), 
-            #debug=True
-            )
+    if os.name == 'nt':
+        app.run(debug=True)
+    else:
+        try:
+            print(f'Running happily on {os.uname()}!')  
+        except Exception as E:
+            print(f'The OS {os.name} is unsupported.\n{E}')
+        app.run(host='0.0.0.0', 
+                    port=int(os.environ.get('PORT', 4000))
+                )

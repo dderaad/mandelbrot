@@ -1,6 +1,11 @@
 import numpy as np
 from numba import types
 
+"""
+Generates a complex grid and corresponding axes for the given bounds
+The resolution refers to the number of evenly spaced points used in both
+The y and x dimensions
+"""
 def generate_grid(re_bounds=(-3, 1.5), 
                   im_bounds=(-1.25, 1.25), 
                   resolution=1000):
