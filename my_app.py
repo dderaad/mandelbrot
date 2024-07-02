@@ -10,6 +10,7 @@ APP_TITLE = f'Mandelbrot Zoom App by {NAME}'
 FIGURE_TITLE = 'Mandelbrot Set'
 
 # Mandelbrot Graph Stuff
+
 def mandelbrot_graph(*args):
     if args:
         C, real_line, imag_line = generate_grid(*args)
@@ -21,8 +22,6 @@ def mandelbrot_graph(*args):
               "y": "Im(z)"}
     
     A = np.abs(Mb).astype(np.float64)
-
-    #print(A.shape, real_line.shape, imag_line.shape)
 
     fig = px.imshow(A, 
                     labels = labels,
@@ -36,6 +35,7 @@ def mandelbrot_graph(*args):
     return fig
 
 fig = mandelbrot_graph()
+
 # App stuff
 
 app = Dash()

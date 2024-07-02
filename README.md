@@ -2,7 +2,7 @@
 
 A live, web-based demonstration of the Mandelbrot set, with infinite zoom.
 
-To build the app yourself, 
+To build the app yourself, install python 3.11.9 (preferably in a virtual environment)
 
 ## On Windows:
 Pull Master
