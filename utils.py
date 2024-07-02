@@ -11,3 +11,4 @@ def generate_grid(re_bounds=(-3, 1.5),
 
     return C, real_line, imag_line
 
+
