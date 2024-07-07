@@ -4,6 +4,7 @@ from utils import *
 
 
 # Creates a smoothed version of the coarser quadratic map
+# Inspired by http://www.mrob.com/pub/muency/representationfunction.html
 def smoothed_mandelbrot(grid, iter, escape_radius=2):
     lt_grid, iter_grid = quadratic_map(grid, iter, escape_radius)
     lt_grid[np.abs(lt_grid) <= 1] = 1 + 1e-10
@@ -19,7 +20,7 @@ Assumes that points will escape once their modulus exceeds the escape radius,
 and stops computing them in further iterations
 Returns "long term" behavior of the grid after iter iterations
   and the number of iterations spent on a particular grid point
-  
+
 DONE: Improve time complexity by splitting the grid amongst cores
 """
 @njit(parallel=False, fastmath=True)
@@ -28,7 +29,7 @@ def quadratic_map(grid, iter, escape_radius=2):
     grid = grid.flatten()
     
     # We split the computation evenly between the cores:
-    ncores = get_num_threads()
+    ncores = get_num_threads() - 1 # -1 to prevent some crashes?
     section_length = grid.shape[0] // ncores
 
     # 'long-term' grid, which contains the long-term (at least, 

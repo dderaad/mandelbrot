@@ -1,5 +1,6 @@
 from dash import Dash, html, dcc, callback, Output, Input, no_update
 from mandelbrot import smoothed_mandelbrot
+from werkzeug.middleware.profiler import ProfilerMiddleware
 from utils import *
 import plotly.express as px
 import numpy as np
@@ -8,6 +9,8 @@ import os
 NAME = 'Dino de Raad'
 APP_TITLE = f'Mandelbrot Zoom App by {NAME}'
 FIGURE_TITLE = 'Mandelbrot Set'
+DEFAULT_RESOLUTION = 1500
+DEFAULT_ITERATION_MAX = 1000
 
 # Mandelbrot Graph Stuff
 
@@ -15,8 +18,8 @@ def mandelbrot_graph(*args):
     if args:
         C, real_line, imag_line = generate_grid(*args)
     else:
-        C, real_line, imag_line = generate_grid()
-    Mb = smoothed_mandelbrot(C, 100)
+        C, real_line, imag_line = generate_grid(resolution=DEFAULT_RESOLUTION)
+    Mb = smoothed_mandelbrot(C, DEFAULT_ITERATION_MAX)
 
     labels = {"x": "Re(z)",
               "y": "Im(z)"}
@@ -40,6 +43,7 @@ fig = mandelbrot_graph()
 
 app = Dash()
 server = app.server
+#app.wsgi_app = ProfilerMiddleware(app.wsgi_app) # Profiler
 
 app.layout = [
     html.Div(children=APP_TITLE),
@@ -73,10 +77,8 @@ def zoom_event(relayout_data, figure):
     try:
         xbounds = [relayout_data['xaxis.range[0]'], relayout_data['xaxis.range[1]']] 
         ybounds = [relayout_data['yaxis.range[0]'], relayout_data['yaxis.range[1]']]
-        
-        #print("x, y:", xbounds, ybounds)
 
-        grid_args = (xbounds, ybounds, 750)
+        grid_args = (xbounds, ybounds, DEFAULT_RESOLUTION)
 
         zoomed_figure = mandelbrot_graph(*grid_args)
     except (KeyError, TypeError):
