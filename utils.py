@@ -1,5 +1,6 @@
 import numpy as np
 from numba import types
+from dash import html
 
 """
 Generates a complex grid and corresponding axes for the given bounds
@@ -16,3 +17,15 @@ def generate_grid(re_bounds=(-3, 1.5),
 
     return C, real_line, imag_line
 
+"""
+Turns raw text written in 'standard' format and returns a list of html objects
+representing prettier text.
+"""
+
+def format_html(text):
+    children = []
+    for line in text.split('\n'):
+        children.append(line)
+        children.append(html.Br())
+
+    return children
