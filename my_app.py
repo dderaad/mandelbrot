@@ -9,8 +9,8 @@ import os
 NAME = 'Dino de Raad'
 APP_TITLE = f'Mandelbrot Zoom App by {NAME}'
 FIGURE_TITLE = 'Mandelbrot Set'
-DEFAULT_RESOLUTION = 100
-DEFAULT_ITERATION_MAX = 500
+DEFAULT_RESOLUTION = 500
+DEFAULT_ITERATION_MAX = 300
 ABOUT_TITLE = "About the Infinite Zoom Mandelbrot App"
 ABOUT_BODY = f"""
 Hello!\n
