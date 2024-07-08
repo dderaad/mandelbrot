@@ -61,7 +61,10 @@ server = app.server
 #app.wsgi_app = ProfilerMiddleware(app.wsgi_app) # Profiler
 
 app.layout = [
-    html.Div(children=APP_TITLE),
+    html.Div(children=[html.H1(APP_TITLE), 
+                       html.Div([html.Button('ABOUT', id='about-button'), html.Button('RESET', id='reset-button')])
+                       ], style={"display":"flex", "gap":"40%", "align-items":"flex-start"}),
+
     html.Div(
     [dcc.Loading(
         children=dcc.Graph(id='mandelbrot-fig', figure=fig, style={'height': '90vh'}),
@@ -71,14 +74,14 @@ app.layout = [
         delay_show=200,
         ),
     html.Div(
-        html.Dialog(children=html.Div([html.H1(ABOUT_TITLE), 
+        html.Dialog(children=html.Div([html.H2(ABOUT_TITLE), 
                                        html.Span(format_html(ABOUT_BODY))
                                        ]), 
                                        title=ABOUT_TITLE, id='about-dialogue', open=True, 
                                        style={
                                            'position': 'absolute', 
-                                           'top': 50, 
-                                           'left': 1000, 
+                                           'top': 30, 
+                                           'left': "65%", 
                                            'width': '25%', 
                                            'height': '80%', 
                                            'background': 
@@ -87,9 +90,8 @@ app.layout = [
                     ),
             ),
     ]),
+
     html.Div(id='zoom-display', children=''),
-    html.Button('RESET', id='reset-button'),
-    html.Button('ABOUT', id='about-button'),
 ]
 
 @callback(
