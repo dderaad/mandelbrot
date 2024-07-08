@@ -16,11 +16,12 @@ ABOUT_BODY = f"""
 Hello!\n
 Welcome to the {APP_TITLE}! Please click and drag on the graph to zoom. Click "ABOUT" to dismiss this box. If you can no longer see the mandelbrot set, please hit the "RESET" button.\n
 My name is Dino de Raad and I made this app so that you, dear reader, can zoom into the mandelbrot set, an object native to the Complex plane.\n
-The app is written in Python, and wraps the core plotting functions of plotly in Dash (which are built on flask).\n
+Please save any plots you particularly like using the "plot as png" camera button that appears when you hover over the graph.\n
+The app is written in Python, and wraps the core plotting functions of plotly in Dash (which are built on Flask).\n
 The mandelbrot set is generated with a custom algorithm, optimized for speed on certain types of computer architecture.\n
 If you are using the web version and find the resolution to be lacking, please consider visiting the [github](https://github.com/dderaad/mandelbrot) and build the app for faster home use.\n
 \n
-If you'd like to give me your thoughts or contibute to the project, please email me at [dideraad@gmail.com](mailto:dideraad@gmail.com)\n
+If you'd like to give me your thoughts, send your favorite plot to me, or contribute to the project, please email me at [dideraad@gmail.com](mailto:dideraad@gmail.com)\n
 \n
 The application is hosted on onrender, and I thank them for the use of their site and resources.
 """
