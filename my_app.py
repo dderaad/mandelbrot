@@ -25,6 +25,8 @@ If you'd like to give me your thoughts, send your favorite plot to me, or contri
 \n
 The application is hosted on onrender, and I thank them for the use of their site and resources.
 """
+environment = {"resolution": DEFAULT_RESOLUTION,
+               "iteration_max": DEFAULT_ITERATION_MAX}
 
 # Mandelbrot Graph Stuff
 
@@ -32,8 +34,8 @@ def mandelbrot_graph(*args):
     if args:
         C, real_line, imag_line = generate_grid(*args)
     else:
-        C, real_line, imag_line = generate_grid(resolution=DEFAULT_RESOLUTION)
-    Mb = smoothed_mandelbrot(C, DEFAULT_ITERATION_MAX)
+        C, real_line, imag_line = generate_grid(resolution=environment["resolution"])
+    Mb = smoothed_mandelbrot(C, environment["iteration_max"])
 
     labels = {"x": "Re(z)",
               "y": "Im(z)"}
@@ -45,9 +47,12 @@ def mandelbrot_graph(*args):
                     x = real_line,
                     y = imag_line
                     )
-    fig.update_layout(template="simple_white", 
-                    title=FIGURE_TITLE, 
-                    coloraxis_showscale=False)
+    fig.update_layout(template="simple_white",
+                        coloraxis_showscale=False,
+                        #margin={'t': 0}
+                        title={'text': FIGURE_TITLE, 'automargin': False}
+                        )
+    
     
     return fig
 
@@ -61,38 +66,47 @@ app = Dash()
 server = app.server
 #app.wsgi_app = ProfilerMiddleware(app.wsgi_app) # Profiler
 
+
+resolution_slider_marks = {**{f'{2**x}':f'{(2**x)**2} px' for x in range(8, 12, 1)}}
+iteration_slider_marks = {**{1000: "1000 Iterations"}, **{i: f'{i}' for i in range(100, 1000, 100)}}
+
 app.layout = [
     html.Div(children=[html.H1(APP_TITLE), 
                        html.Div([html.Button('ABOUT', id='about-button'), html.Button('RESET', id='reset-button')])
                        ], style={"display":"flex", "gap":"40%", "align-items":"flex-start"}),
 
     html.Div(
-    [dcc.Loading(
-        children=dcc.Graph(id='mandelbrot-fig', figure=fig, style={'height': '90vh'}),
-        type="cube", 
-        id="loading-1", 
-        overlay_style={"visibility": "visible", "filter":"blur(1px)"},
-        delay_show=200,
-        ),
-    html.Div(
-        html.Dialog(children=html.Div([html.H2(ABOUT_TITLE), 
-                                       html.Span(format_html(ABOUT_BODY))
-                                       ]), 
-                                       title=ABOUT_TITLE, id='about-dialogue', open=True, 
-                                       style={
-                                           'position': 'absolute', 
-                                           'top': 30, 
-                                           'left': "65%", 
-                                           'width': '25%', 
-                                           'height': '80%', 
-                                           'background': 
-                                           'rgba(255, 255, 255, 0.85)', 
-                                           'z-index': 9999}
-                    ),
+    [
+        dcc.Slider(min=256, max=2048, step=None, marks=resolution_slider_marks, value=DEFAULT_RESOLUTION, vertical=True, id='resolution-slider', tooltip={"placement": "bottom"}),
+        dcc.Slider(min=100, max=1000, step=None, marks=iteration_slider_marks,  value=DEFAULT_ITERATION_MAX, vertical=True, id='iteration-slider', tooltip={"placement": "bottom"}),
+        dcc.Loading(
+            children=dcc.Graph(id='mandelbrot-fig', figure=fig, style={'height': '100vh', 'width': '135vh'}),
+            type="cube", 
+            id="loading-1", 
+            overlay_style={"visibility": "visible", "filter":"blur(1px)"},
+            delay_show=200,
             ),
-    ]),
+            html.Div(
+            html.Dialog(children=html.Div([html.H2(ABOUT_TITLE), 
+                                        html.Span(format_html(ABOUT_BODY))
+                                        ]), 
+                                        title=ABOUT_TITLE, id='about-dialogue', open=False, 
+                                        style={
+                                            'position': 'absolute', 
+                                            'top': 30, 
+                                            'left': "65%", 
+                                            'width': '25%', 
+                                            'height': '80%', 
+                                            'background': 
+                                            'rgba(255, 255, 255, 0.85)', 
+                                            'z-index': 9999}
+                        ),
+                ),
+    ], style={'display': 'flex', 'flexDirection': 'row', 'height': '10vh', 'align-items':'flex-bottom', 'gap':'4%'}),
+    
+    
 
-    html.Div(id='zoom-display', children=''),
+    html.Div(id='zoom-display', children='', style={'position': 'absolute', 'top': '95%'}),
 ]
 
 @callback(
@@ -110,19 +124,21 @@ def zoom_event(relayout_data, figure):
     """
 
     zoomed_figure = figure
-    xbounds = 0
-    ybounds = 0
+    xbounds = [0, 0]
+    ybounds = [0, 0]
+    zoom_or_pan = False
     try:
         xbounds = [relayout_data['xaxis.range[0]'], relayout_data['xaxis.range[1]']] 
         ybounds = [relayout_data['yaxis.range[0]'], relayout_data['yaxis.range[1]']]
-
-        grid_args = (xbounds, ybounds, DEFAULT_RESOLUTION)
-
-        zoomed_figure = mandelbrot_graph(*grid_args)
+        zoom_or_pan = True
     except (KeyError, TypeError):
         pass
 
-    return zoomed_figure, f'Re(z) = {xbounds}\nIm(z) = {ybounds}'
+    if zoom_or_pan:
+        grid_args = (xbounds, ybounds, environment['resolution'])
+        zoomed_figure = mandelbrot_graph(*grid_args)
+
+    return zoomed_figure, format_html(f'Re(z) = [{xbounds[0]:.2f}, {xbounds[1]:.2f}]\nIm(z) = [{ybounds[0]:.2f}, {ybounds[0]:.2f}]')
 
 # Makes the ABOUT button summon/dismiss the dialogue
 @callback(
@@ -145,6 +161,17 @@ def summon_dismiss_dialogue(state, _):
 def reset_graph(_):
     return mandelbrot_graph(), 'Reset Successful!', {}
 
+
+# Slider functionality
+@callback(
+    [],
+    [Input('resolution-slider', 'value'),
+     Input('iteration-slider', 'value')]
+)
+def update_res_and_iter(resolution, iteration):
+    environment['resolution'] = resolution
+    environment['iteration_max'] = iteration
+    return None
 
 if __name__ == "__main__":
     if os.name == 'nt':
