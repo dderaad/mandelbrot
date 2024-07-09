@@ -3,15 +3,16 @@ from numba import njit, types, prange, get_num_threads
 from utils import *
 
 
-# Creates a smoothed version of the coarser quadratic map
+# Creates a smoothed version of the coarser quadratic map, 
+# and returns the data as well as a co
 # Inspired by http://www.mrob.com/pub/muency/representationfunction.html
 def smoothed_mandelbrot(grid, iter, escape_radius=2):
-    lt_grid, iter_grid = quadratic_map(grid, iter, escape_radius)
+    lt_grid, iter_grid, gradient = quadratic_map(grid, iter, escape_radius)
     lt_grid[np.abs(lt_grid) <= 1] = 1 + 1e-10
     log22 = lambda x: np.log2(np.log2(x)) # Iterated log
-    Mb = iter_grid + log22(np.abs(lt_grid)) - log22(escape_radius)
+    continuous_dwell = (iter_grid + log22(np.abs(lt_grid)) - log22(escape_radius)).astype(np.float64)
 
-    return Mb
+    return continuous_dwell, lt_grid, iter_grid, gradient
 
 
 """
@@ -36,7 +37,9 @@ def quadratic_map(grid, iter, escape_radius=2):
     # until iter iterations) behavior of the Mandelbrot set
     lt_grid = np.zeros_like(grid, dtype=types.complex128)
     # iteration grid that stores the number of iterations
-    iter_grid = np.zeros_like(grid, dtype=types.complex128)
+    iter_grid = np.zeros_like(grid, dtype=types.int16)
+    # gradient grid that stores the pointwise derivative
+    gradient = grid.copy()
 
     for i in prange(ncores):
         start, end = i*section_length, (i+1)*section_length
@@ -46,14 +49,17 @@ def quadratic_map(grid, iter, escape_radius=2):
 
         for j in range(iter):
             mask = np.abs(lt_grid[start:end])<=escape_radius
+            gradient[start:end][mask] = 2 * lt_grid[start:end][mask] * gradient[start:end][mask] + 1
             lt_grid[start:end][mask] = np.power(lt_grid[start:end][mask], 2) + grid[start:end][mask]
             iter_grid[start:end][mask] = j
+            
 
     lt_grid = lt_grid.reshape(grid_shape)
     iter_grid = iter_grid.reshape(grid_shape)
+    gradient = gradient.reshape(grid_shape)
 
 
-    return lt_grid, iter_grid
+    return lt_grid, iter_grid, gradient
 
 if __name__ == "__main__":
     C, real_line, imag_line = generate_grid()

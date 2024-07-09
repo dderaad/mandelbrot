@@ -3,6 +3,7 @@ from mandelbrot import smoothed_mandelbrot
 from werkzeug.middleware.profiler import ProfilerMiddleware
 from utils import *
 import plotly.express as px
+import plotly.graph_objects as go
 import numpy as np
 import os 
 
@@ -35,23 +36,30 @@ def mandelbrot_graph(*args):
         C, real_line, imag_line = generate_grid(*args)
     else:
         C, real_line, imag_line = generate_grid(resolution=environment["resolution"])
-    Mb = smoothed_mandelbrot(C, environment["iteration_max"])
+    continuous_dwell, lt_grid, iter_grid, gradient = smoothed_mandelbrot(C, environment["iteration_max"])
+    Mb_color = mandelbrot_to_colorspace(continuous_dwell, lt_grid, iter_grid, gradient, environment['iteration_max'], environment['resolution'])
 
     labels = {"x": "Re(z)",
               "y": "Im(z)"}
     
-    A = np.abs(Mb).astype(np.float64)
 
-    fig = px.imshow(A, 
-                    labels = labels,
-                    x = real_line,
-                    y = imag_line
-                    )
+    # fig = go.Figure(go.Heatmap(z=lt_grid, 
+    #                            x=real_line,
+    #                            y=imag_line,
+    #                            colorscale=custom_colorscale,
+    #                            showscale=False,
+    #                            ),
+    #                     )
+    fig = px.imshow(Mb_color,
+                    x=real_line,
+                    y=imag_line,)
     fig.update_layout(template="simple_white",
-                        coloraxis_showscale=False,
-                        #margin={'t': 0}
-                        title={'text': FIGURE_TITLE, 'automargin': False}
-                        )
+                      coloraxis_showscale=False,
+                      margin=dict(l=0, r=0, t=5, b=0),
+                      title={'text': FIGURE_TITLE, 'automargin': True},
+                      yaxis = dict(title=f"{labels['y']}", scaleanchor = 'x'),
+                      xaxis = dict(title=f"{labels['x']}"),
+                      )
     
     
     return fig
@@ -68,7 +76,7 @@ server = app.server
 
 
 resolution_slider_marks = {**{f'{2**x}':f'{(2**x)**2} px' for x in range(8, 12, 1)}}
-iteration_slider_marks = {**{1000: "1000 Iterations"}, **{i: f'{i}' for i in range(100, 1000, 100)}}
+iteration_slider_marks = {i: f'{i}' for i in range(100, 2000+100, 100)}
 
 app.layout = [
     html.Div(children=[html.H1(APP_TITLE), 
@@ -77,10 +85,20 @@ app.layout = [
 
     html.Div(
     [
-        dcc.Slider(min=256, max=2048, step=None, marks=resolution_slider_marks, value=DEFAULT_RESOLUTION, vertical=True, id='resolution-slider', tooltip={"placement": "bottom"}),
-        dcc.Slider(min=100, max=1000, step=None, marks=iteration_slider_marks,  value=DEFAULT_ITERATION_MAX, vertical=True, id='iteration-slider', tooltip={"placement": "bottom"}),
+        html.Div(
+            [
+                html.Div(children='Resolution'),
+                dcc.Slider(min=256, max=2048, step=None, marks=resolution_slider_marks, value=DEFAULT_RESOLUTION, vertical=True, id='resolution-slider', tooltip={"placement": "bottom"})
+                ], style={'gap': "10%"}
+        ),
+        html.Div(
+            [
+                html.Div(children='Iteration Max'),
+                dcc.Slider(min=100, max=2000, step=None, marks=iteration_slider_marks,  value=DEFAULT_ITERATION_MAX, vertical=True, id='iteration-slider', tooltip={"placement": "bottom"})
+                ], style={'gap': "10%"}
+        ),
         dcc.Loading(
-            children=dcc.Graph(id='mandelbrot-fig', figure=fig, style={'height': '100vh', 'width': '135vh'}),
+            children=dcc.Graph(id='mandelbrot-fig', figure=fig, style={'height': '80vh', 'width': '80vw'}, config={'doubleClick': False}),
             type="cube", 
             id="loading-1", 
             overlay_style={"visibility": "visible", "filter":"blur(1px)"},
@@ -102,7 +120,7 @@ app.layout = [
                                             'z-index': 9999}
                         ),
                 ),
-    ], style={'display': 'flex', 'flexDirection': 'row', 'height': '10vh', 'align-items':'flex-bottom', 'gap':'4%'}),
+    ], style={'display': 'flex', 'flexDirection': 'row', 'height': '10vh', 'align-items':'flex-start', 'gap':'4%'}),
     
     
 
@@ -138,7 +156,7 @@ def zoom_event(relayout_data, figure):
         grid_args = (xbounds, ybounds, environment['resolution'])
         zoomed_figure = mandelbrot_graph(*grid_args)
 
-    return zoomed_figure, format_html(f'Re(z) = [{xbounds[0]:.2f}, {xbounds[1]:.2f}]\nIm(z) = [{ybounds[0]:.2f}, {ybounds[0]:.2f}]')
+    return zoomed_figure, format_html(f'Re(z) = [{xbounds[0]:.4f}, {xbounds[1]:.4f}]\nIm(z) = [{ybounds[0]:.4f}, {ybounds[0]:.4f}]')
 
 # Makes the ABOUT button summon/dismiss the dialogue
 @callback(
