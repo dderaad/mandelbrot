@@ -37,7 +37,13 @@ def mandelbrot_graph(*args):
     else:
         C, real_line, imag_line = generate_grid(resolution=environment["resolution"])
     continuous_dwell, lt_grid, iter_grid, gradient = smoothed_mandelbrot(C, environment["iteration_max"])
-    Mb_color = mandelbrot_to_colorspace(continuous_dwell, lt_grid, iter_grid, gradient, environment['iteration_max'], environment['resolution'])
+    Mb_color = mandelbrot_to_colorspace(continuous_dwell, 
+                                        lt_grid, 
+                                        iter_grid, 
+                                        gradient, 
+                                        environment['iteration_max'], 
+                                        environment['resolution'],
+                                        s=[0.1, 1])
 
     labels = {"x": "Re(z)",
               "y": "Im(z)"}
@@ -78,6 +84,18 @@ server = app.server
 resolution_slider_marks = {**{f'{2**x}':f'{(2**x)**2} px' for x in range(8, 12, 1)}}
 iteration_slider_marks = {i: f'{i}' for i in range(100, 2000+100, 100)}
 
+plot_config = {'doubleClick': False, 
+               'scrollZoom': True, 
+               'displayModeBar': True, 
+               'displaylogo': False,
+               'toImageButtonOptions': {
+                   'filename': 'mandelbrot_render',
+                   'height': 2160,
+                   'width': 3840,
+                   'scale': 0.5
+               }
+               }
+
 app.layout = [
     html.Div(children=[html.H1(APP_TITLE), 
                        html.Div([html.Button('ABOUT', id='about-button'), html.Button('RESET', id='reset-button')])
@@ -98,7 +116,7 @@ app.layout = [
                 ], style={'gap': "10%"}
         ),
         dcc.Loading(
-            children=dcc.Graph(id='mandelbrot-fig', figure=fig, style={'height': '80vh', 'width': '80vw'}, config={'doubleClick': False}),
+            children=dcc.Graph(id='mandelbrot-fig', figure=fig, style={'height': '80vh', 'width': '80vw'}, config=plot_config),
             type="cube", 
             id="loading-1", 
             overlay_style={"visibility": "visible", "filter":"blur(1px)"},

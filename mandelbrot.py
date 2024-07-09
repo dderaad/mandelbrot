@@ -6,7 +6,7 @@ from utils import *
 # Creates a smoothed version of the coarser quadratic map, 
 # and returns the data as well as a co
 # Inspired by http://www.mrob.com/pub/muency/representationfunction.html
-def smoothed_mandelbrot(grid, iter, escape_radius=2):
+def smoothed_mandelbrot(grid, iter, escape_radius=1000):
     lt_grid, iter_grid, gradient = quadratic_map(grid, iter, escape_radius)
     lt_grid[np.abs(lt_grid) <= 1] = 1 + 1e-10
     log22 = lambda x: np.log2(np.log2(x)) # Iterated log
@@ -25,7 +25,7 @@ Returns "long term" behavior of the grid after iter iterations
 DONE: Improve time complexity by splitting the grid amongst cores
 """
 @njit(parallel=False, fastmath=True)
-def quadratic_map(grid, iter, escape_radius=2):
+def quadratic_map(grid, iter, escape_radius):
     grid_shape = grid.shape
     grid = grid.flatten()
     
