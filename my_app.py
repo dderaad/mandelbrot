@@ -92,9 +92,10 @@ plot_config = {'doubleClick': False,
                    'filename': 'mandelbrot_render',
                    'height': 2160,
                    'width': 3840,
-                   'scale': 0.5
+                   'scale': 0.75
                }
                }
+               
 
 app.layout = [
     html.Div(children=[html.H1(APP_TITLE), 
