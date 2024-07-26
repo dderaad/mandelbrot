@@ -6,6 +6,7 @@ To build the app yourself, install python 3.11.9 (preferably in a virtual enviro
 
 ## On Windows:
 Pull Master
+
 Run 
 ```
 pip install -r requirements_windows.txt
@@ -14,6 +15,7 @@ python my_app.py
 
 ## On Unix:
 Pull Master
+
 Run 
 ```
 pip install -r requirements_unix.txt
